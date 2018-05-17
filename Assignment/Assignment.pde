@@ -1,4 +1,3 @@
-
 //Integers used When creating Screen size, timers or scores.
 int screenW = 512;
 int screenH = 348;
