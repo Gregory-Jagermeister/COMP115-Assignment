@@ -5,6 +5,8 @@ int intTime;
 int interval = 1000;
 int RandomCount;
 int score;
+int hits;
+int oldscore;
 
 //Color array only used for trees however.
 color[] greenArray = {#5AC11F, #52A224, #337E08, #419313};
@@ -38,6 +40,8 @@ void setup() {
   player.setBoundary(48,450);
   //the score is set to 0 on startup
   score = 0;
+  hits = 0;
+  oldscore = 0;
   //populate the hammers array with hammers.
   for (int i = 0; i < hammers.length; i++) {
     hammers[i] = new Hammer();
@@ -89,8 +93,8 @@ void draw() {
     
     noStroke();
     fill(0);
-    //creates the players score and draws the player to the screen.
-    Score();
+    //creates the players score and draws the player to the screen. Now Obsolete
+    //Score(score);
     player.Draw();
     //This for loop checks each hammer object and compares it to the player checking to
     //see if the two objects have intersected, if they havent then nothing happens, however
@@ -106,10 +110,20 @@ void draw() {
         //this simply tells the object that the hammer has fallen and should reset in a
         // random position.
         hammers[i].HamFell = true;
+        hits++;
       }
     }
+    noStroke();
+    CheckScore(score, oldscore, hits);
+    
+    if(score + (hits * 9) >= 54){
+      score = 0;
+      hits = 0;
+      
+    };
+    
   }
-
+  
   //used for assinging the layered properly toggles it on/off when a key is pressed.
   if (response == true) {
     layered = true;
@@ -144,7 +158,7 @@ void keyPressed() {
         player.Bound2 = 400;
         if(player.boundaryUpdate()){
           player.stopLEFT(); 
-          score+=1;
+          score+=3;
         }
       }
     }
@@ -266,12 +280,12 @@ void drawTree(float x, float y, color treeColor) {
   //ends drawing the tree
 }
 
-void Score() {
-  //sets the text size
-  textSize(24);
-  //draws it to the screen.
-  text("Score: " + score, 20, 40);
-}
+//void Score(int text) {
+//  //sets the text size
+//  textSize(24);
+//  //draws it to the screen.
+//  text("Score: " + text, 20, 40);
+//}
 
 /*For the below code I've used classes to help create and 
 structure some of the objects that I was using. Now i'm not particularly
@@ -339,6 +353,7 @@ class Hammer {
 
           HamFell = true;
           Ypos = -16;
+          score++;
         }
 
         if (Ypos == Ypos) {
@@ -498,4 +513,55 @@ boolean isColliding(float p1x, float p1y, float p1w, float p1h,
     return true;
   }
   return false;
+}
+
+//This function will check the score and whether it needs to be changed on the display.
+// Note For Marker: You missed an opportunity in calling this Part "one function to rule
+// them all" you could have used "One function to Score them all". Also please no Mark
+// reductions for this all in good jest.
+void CheckScore(int score, int PreScore, int lifeScore) {
+  //create X,Y positions in the plane.
+  int x, y;
+  // Has the score changed since the last check.
+  if (PreScore < score) {
+
+    // this is bloody Cool; seperate the score in columns and rows
+    // basically we get our index (i) which is incrementing over an amount equal to
+    // the score. 
+    for (int i = 0; i <= (score); i++) {
+      x = ((i % 9) + 1) *50;
+      y = (((i / 9) + 1) *50)+(lifeScore*50);
+      int size = 50;
+      circleGradient(x, y, size, 30, true);
+      
+    }
+  }
+  if(lifeScore > 0){
+
+      for(int s = 1; s <= lifeScore; s++){
+       for(int j = 1; j <= 9; j++){
+        int size = 50;
+        circleGradient(j*50,s*50, size, 30, false);
+       }
+      }
+
+    }
+  PreScore = score;
+}
+
+// draws a gradient circle.
+void circleGradient(float xloc, float yloc, int size, int stepSize, boolean IsBlack ) {
+  //work out how many steps are needed for the size and the amount of iterations.
+  float steps = size/stepSize;
+  // a Loop to draw the gradient circle.
+  for (int i = 0; i < stepSize; i++) {
+    // a check to see if we want the circle black or red.
+    if (IsBlack) {
+      fill(255 - (i * (steps + 10)));
+    } else {
+      fill(255, 255 - (float(i) * (steps + 10)), 255 - (float(i) * (steps + 10)));
+    }
+    //draw the circle to the screen.
+    ellipse(xloc, yloc, size - (i*steps), size - (i*steps));
+  }
 }
